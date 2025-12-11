@@ -51,7 +51,7 @@ function createWindow() {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 
   return mainWindow
 }
@@ -90,6 +90,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('set-ignore', (e, ignore) => {
     win.setIgnoreMouseEvents(ignore, { forward: true })
+  })
+
+  ipcMain.handle('minimize-window', () => {
+    win.minimize()
   })
 
   ipcMain.handle('close-window', () => {

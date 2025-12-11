@@ -109,28 +109,32 @@
 
 <style>
   :root {
-    --logo-width: 340px;
-    --logo-height: 195px;
-    --logo-margin: -60px;
+    --logo-width: 320px;
+    --logo-height: auto;
+    --logo-margin: 0px;
   }
 
   div {
-    position: absolute;
-    top: 0;
-    left: 0;
+    position: relative;
     width: 100%;
-    height: calc(var(--logo-height) + var(--logo-margin));
+    height: 120px; /* Reduced height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px; /* Reduced margin */
+    z-index: 10;
   }
 
   img {
     width: var(--logo-width);
-    height: var(--logo-height);
-    margin-bottom: var(--logo-margin);
-    z-index: 1;
-
+    height: auto;
+    object-fit: contain;
+    
     -webkit-user-select: none;
     pointer-events: auto;
     display: block;
     position: relative;
+    
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
   }
 </style>

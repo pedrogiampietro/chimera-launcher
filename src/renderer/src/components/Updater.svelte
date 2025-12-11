@@ -268,7 +268,9 @@
   }
 
   progress::-webkit-progress-bar {
-    background: linear-gradient(0deg, #ffffff11, #000000);
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
   }
 
   .play {
