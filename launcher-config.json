@@ -4,7 +4,7 @@
   "REGISTER_URL": "https://chimeraot.online/account-manager/register",
   "DISCORD_INVITE": "https://discord.gg/nNBxRpNMFF",
   "R2_CDN_URL": "https://pub-7d39372dbb3e4061b024ffe5d80fed84.r2.dev",
-  "API_URL": "http://example.com:3000",
+  "API_URL": "https://launcher.chimeraot.online",
   "CLIENTS": {
     "64-bit OpenGL": "chimera_gl.exe",
     "64-bit DirectX": "chimera_dx.exe"

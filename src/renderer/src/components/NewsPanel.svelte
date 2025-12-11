@@ -39,9 +39,8 @@
   .news-panel {
     display: flex;
     flex-direction: column;
-    width: 100%;
     flex: 1;
-    min-height: 0;
+    min-width: 0;
     overflow: hidden;
   }
 

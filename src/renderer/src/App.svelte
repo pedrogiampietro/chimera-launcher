@@ -9,9 +9,11 @@
 <div class="window-frame">
   <TitleBar />
   <div class="content-container">
-    <Logo />
+    <div class="top-section">
+      <Logo />
+      <NewsPanel />
+    </div>
     <Socials />
-    <NewsPanel />
     <Updater />
   </div>
 </div>
@@ -45,11 +47,20 @@
     flex-direction: column;
     padding: 0 32px 32px 32px;
     gap: 1rem;
-    max-width: 1200px;
-    margin: 0 auto;
     width: 100%;
-    overflow-y: auto; /* Allow scrolling if content is too tall */
+    box-sizing: border-box;
+    overflow-y: auto;
     z-index: 1;
+  }
+
+  .top-section {
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+    align-items: flex-start;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
   }
 
   /* Custom Scrollbar for the main content area if needed */

@@ -88,53 +88,42 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
+  class="logo-container"
   bind:this={mouseIgnoreEl}
   on:mousedown={onMouseDown}
   on:mousemove={onMouseMove}
   on:mouseup={onMouseUp}
   on:mouseleave={onMouseLeave}
-></div>
-
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<img
-  bind:this={logoEl}
-  src={logoUrl}
-  alt="Logo"
-  on:load={initCanvas}
-  on:mousedown={onMouseDown}
-  on:mousemove={onMouseMove}
-  on:mouseup={onMouseUp}
-  on:mouseleave={onMouseLeave}
-/>
+>
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+  <img
+    bind:this={logoEl}
+    src={logoUrl}
+    alt="Logo"
+    on:load={initCanvas}
+    on:mousedown={onMouseDown}
+    on:mousemove={onMouseMove}
+    on:mouseup={onMouseUp}
+    on:mouseleave={onMouseLeave}
+  />
+</div>
 
 <style>
-  :root {
-    --logo-width: 320px;
-    --logo-height: auto;
-    --logo-margin: 0px;
-  }
-
-  div {
-    position: relative;
-    width: 100%;
-    height: 120px; /* Reduced height */
+  .logo-container {
+    width: 280px;
+    flex-shrink: 0;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px; /* Reduced margin */
+    align-items: flex-start;
     z-index: 10;
   }
 
   img {
-    width: var(--logo-width);
+    width: 100%;
     height: auto;
     object-fit: contain;
-    
     -webkit-user-select: none;
     pointer-events: auto;
     display: block;
-    position: relative;
-    
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));
   }
 </style>
