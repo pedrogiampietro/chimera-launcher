@@ -1,0 +1,113 @@
+/* Global Vars from Web (Globals.css + Tailwind Config Purple Theme) */
+:root {
+  --background: 231 36% 22%;
+  /* #242a4d */
+  --foreground: 235 25% 60%;
+  /* #7f84b5 */
+
+  --card: 235 33% 26%;
+  /* #2c3158 */
+  --card-foreground: 0 0% 100%;
+
+  --popover: 235 33% 26%;
+  --popover-foreground: 235 25% 60%;
+
+  --primary: 257 71% 59%;
+  /* #794de2 */
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 235 33% 26%;
+  /* #2c3158 */
+  --secondary-foreground: 235 25% 60%;
+
+  --muted: 237 30% 35%;
+  /* #3f4475 */
+  --muted-foreground: 235 25% 60%;
+
+  --accent: 257 71% 59%;
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 235 25% 60%;
+  --destructive-foreground: 231 36% 22%;
+
+  --border: 237 30% 35%;
+  /* #3f4475 */
+
+  --input: 235 33% 26%;
+  /* #2c3158 */
+  --ring: 235 25% 60%;
+  /* #7f84b5 */
+
+  --radius: 0.5rem;
+}
+
+* {
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+body,
+html,
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: no-drag;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  overflow: hidden;
+  /* Prevent scrolling on main window */
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--secondary));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Utility Classes */
+.glass {
+  background: hsl(var(--background) / 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.glass-card {
+  background: hsl(var(--card) / 0.85);
+  /* Increased opacity for readability */
+  backdrop-filter: blur(8px);
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius);
+}
+
+.text-primary {
+  color: hsl(var(--primary));
+}
+
+.text-muted {
+  color: hsl(var(--muted-foreground));
+}
