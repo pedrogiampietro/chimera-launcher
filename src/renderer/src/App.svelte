@@ -21,7 +21,7 @@
 <style>
   :global(body) {
     background-color: hsl(var(--background));
-    background-image: url('./assets/images/background.jpg');
+    background-image: url('./assets/images/background.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

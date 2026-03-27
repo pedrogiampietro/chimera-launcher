@@ -256,14 +256,14 @@
   }
 
   progress.file::-webkit-progress-value {
-    background: linear-gradient(90deg, #c084fc, #a855f7);
-    box-shadow: 0 0 10px rgba(192, 132, 252, 0.5);
+    background: linear-gradient(90deg, hsl(46 65% 52%), hsl(46 50% 40%));
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
     border-radius: 4px;
   }
 
   progress.total::-webkit-progress-value {
-    background: linear-gradient(90deg, #794de2, #4c1d95);
-    box-shadow: 0 0 10px rgba(121, 77, 226, 0.5);
+    background: linear-gradient(90deg, hsl(177 43% 30%), hsl(177 43% 18%));
+    box-shadow: 0 0 10px rgba(31, 78, 76, 0.6);
     border-radius: 4px;
   }
 

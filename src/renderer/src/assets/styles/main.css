@@ -1,44 +1,39 @@
-/* Global Vars from Web (Globals.css + Tailwind Config Purple Theme) */
+/* Global Vars from Web (Globals.css + Tailwind Config — Eldera Theme) */
 :root {
-  --background: 231 36% 22%;
-  /* #242a4d */
-  --foreground: 235 25% 60%;
-  /* #7f84b5 */
+  --background: 20 13% 4%;
+  /* #0D0B0A */
+  --foreground: 42 26% 88%;
+  /* #EAE5D9 */
 
-  --card: 235 33% 26%;
-  /* #2c3158 */
-  --card-foreground: 0 0% 100%;
+  --card: 30 14% 8%;
+  /* #181512 */
+  --card-foreground: 42 26% 88%;
 
-  --popover: 235 33% 26%;
-  --popover-foreground: 235 25% 60%;
+  --popover: 24 13% 7%;
+  --popover-foreground: 42 26% 88%;
 
-  --primary: 257 71% 59%;
-  /* #794de2 */
-  --primary-foreground: 0 0% 100%;
+  --primary: 177 43% 21%;
+  /* #1f4e4c teal */
+  --primary-foreground: 0 0% 96%;
 
-  --secondary: 235 33% 26%;
-  /* #2c3158 */
-  --secondary-foreground: 235 25% 60%;
+  --secondary: 24 13% 7%;
+  --secondary-foreground: 42 26% 88%;
 
-  --muted: 237 30% 35%;
-  /* #3f4475 */
-  --muted-foreground: 235 25% 60%;
+  --muted: 22 14% 10%;
+  --muted-foreground: 30 9% 58%;
 
-  --accent: 257 71% 59%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 46 65% 52%;
+  /* #D4AF37 gold */
+  --accent-foreground: 20 13% 4%;
 
-  --destructive: 235 25% 60%;
-  --destructive-foreground: 231 36% 22%;
+  --destructive: 43 30% 50%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 237 30% 35%;
-  /* #3f4475 */
+  --border: 22 10% 14%;
+  --input: 22 10% 14%;
+  --ring: 177 43% 21%;
 
-  --input: 235 33% 26%;
-  /* #2c3158 */
-  --ring: 235 25% 60%;
-  /* #7f84b5 */
-
-  --radius: 0.5rem;
+  --radius: 0.25rem;
 }
 
 * {
@@ -79,12 +74,12 @@ html,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
+  background: hsl(46 30% 32%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(46 50% 44%);
 }
 
 /* Utility Classes */

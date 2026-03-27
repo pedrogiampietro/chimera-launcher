@@ -15,8 +15,8 @@
     height: 36px;
     padding: 0 24px;
     border-radius: var(--radius);
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, #5b3cb0 100%);
-    color: hsl(var(--primary-foreground));
+    background: linear-gradient(135deg, hsl(var(--accent)) 0%, hsl(46 50% 35%) 100%);
+    color: hsl(var(--accent-foreground));
     border: 1px solid rgba(255,255,255,0.1);
     font-weight: 600;
     font-size: 13px;
@@ -35,9 +35,9 @@
   }
 
   button:hover:not(:disabled) {
-    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    background: linear-gradient(135deg, hsl(46 70% 60%) 0%, hsl(46 55% 42%) 100%);
     transform: translateY(-1px);
-    box-shadow: 0 10px 15px -3px rgba(121, 77, 226, 0.3), 0 4px 6px -2px rgba(121, 77, 226, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(212, 175, 55, 0.3), 0 4px 6px -2px rgba(212, 175, 55, 0.1);
   }
 
   button:active:not(:disabled) {

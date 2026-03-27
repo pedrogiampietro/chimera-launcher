@@ -19,7 +19,7 @@
 
 <div class="title-bar">
   <div class="app-region-drag">
-      <span class="version">Chimera Launcher</span>
+      <span class="version">Eldera Launcher</span>
   </div>
   <div class="controls">
     <div class="settings-wrapper">
