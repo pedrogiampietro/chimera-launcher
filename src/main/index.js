@@ -26,6 +26,115 @@ let launchInFlight = false
 let clientRunningLock = false
 let clientRunningPoll = null
 const launcherTokenFileName = 'launcher-token.txt'
+const launcherRuntimeDirName = '_launcher_runtime'
+const launcherGuardFiles = {
+  'mods/launcher_guard/launcher_guard.otmod': `Module
+  name: launcher_guard
+  description: Allows startup only when triggered by the Eldera launcher
+  author: Eldera
+  reloadable: false
+  sandboxed: true
+  scripts: [ launcher_guard ]
+  @onLoad: init()
+  @onUnload: terminate()
+`,
+  'mods/launcher_guard/launcher_guard.lua': `local launcherTokenFile = '/launcher-token.txt'
+local singleInstanceLockFile = '/client-instance.lock'
+local maxTokenAgeSeconds = 30
+local maxLockAgeSeconds = 15
+local heartbeatIntervalMillis = 5000
+local heartbeatEvent = nil
+
+function init()
+  local tokenTimestamp = readLauncherToken()
+  local lockTimestamp = readTimestampFile(singleInstanceLockFile)
+
+  consumeLauncherToken()
+
+  if isInstanceLockActive(lockTimestamp) then
+    print('Blocked second client start: another instance is already running.')
+    g_app.exit()
+    return
+  end
+
+  writeTimestampFile(singleInstanceLockFile, os.time())
+  startHeartbeat()
+
+  if isLauncherTokenValid(tokenTimestamp) then
+    return
+  end
+
+  print('Blocked direct client start: missing launcher token.')
+  g_app.exit()
+end
+
+function terminate()
+  stopHeartbeat()
+  writeTimestampFile(singleInstanceLockFile, 0)
+end
+
+function readLauncherToken()
+  return readTimestampFile(launcherTokenFile)
+end
+
+function consumeLauncherToken()
+  writeTimestampFile(launcherTokenFile, 0)
+end
+
+function isLauncherTokenValid(tokenTimestamp)
+  if not tokenTimestamp then
+    return false
+  end
+
+  local tokenAge = os.time() - tokenTimestamp
+  return tokenAge >= 0 and tokenAge <= maxTokenAgeSeconds
+end
+
+function isInstanceLockActive(lockTimestamp)
+  if not lockTimestamp or lockTimestamp <= 0 then
+    return false
+  end
+
+  local lockAge = os.time() - lockTimestamp
+  return lockAge >= 0 and lockAge <= maxLockAgeSeconds
+end
+
+function readTimestampFile(filePath)
+  if not g_resources.fileExists(filePath) then
+    return nil
+  end
+
+  local content = g_resources.readFileContents(filePath)
+  if not content then
+    return nil
+  end
+
+  return tonumber(content:match('%d+'))
+end
+
+function writeTimestampFile(filePath, value)
+  g_resources.writeFileContents(filePath, tostring(value))
+end
+
+function startHeartbeat()
+  if not cycleEvent then
+    return
+  end
+
+  heartbeatEvent = cycleEvent(function()
+    writeTimestampFile(singleInstanceLockFile, os.time())
+  end, heartbeatIntervalMillis)
+end
+
+function stopHeartbeat()
+  if heartbeatEvent and removeEvent then
+    removeEvent(heartbeatEvent)
+  end
+
+  heartbeatEvent = nil
+end
+`
+}
 
 function createWindow() {
   // Create the browser window.
@@ -104,6 +213,10 @@ if (gotSingleInstanceLock) {
       })
     })
 
+    restoreClientExecutablesIfNeeded().catch((error) => {
+      console.error('Failed to restore client executables on startup:', error)
+    })
+
     createWindow()
 
     app.on('activate', function () {
@@ -176,17 +289,26 @@ if (gotSingleInstanceLock) {
       const clientPath = join(sessionPath, 'otclient', clientExecutable)
       const exists = await fileExists(clientPath)
       if (!exists) {
+        await restoreClientExecutablesIfNeeded(sessionPath)
+      }
+
+      await stashClientExecutables(sessionPath)
+
+      const runtimeClientPath = getRuntimeClientExecutablePath(sessionPath, clientExecutable)
+      const runtimeExists = await fileExists(runtimeClientPath)
+      if (!runtimeExists) {
         await releaseClientLaunchLock()
         return { ok: false, reason: 'missing-executable' }
       }
 
+      await ensureLauncherGuardFiles(sessionPath)
       await writeLauncherToken(sessionPath)
 
       launchInFlight = true
 
       try {
-        const child = spawn(clientPath, [], {
-          cwd: path.dirname(clientPath),
+        const child = spawn(runtimeClientPath, [], {
+          cwd: getClientBaseDir(sessionPath),
           detached: true,
           stdio: 'ignore'
         })
@@ -330,7 +452,7 @@ async function isAnyClientRunning() {
     return true
   }
 
-  const executables = getConfiguredClientExecutableNames()
+  const executables = getConfiguredClientExecutableNames().map((name) => path.basename(name).toLowerCase())
 
   if (executables.length === 0) {
     return false
@@ -356,8 +478,11 @@ async function isAnyClientRunning() {
 
 async function isAnyWindowsProcessRunning(executables) {
   const targets = getConfiguredClientWindowsTargets()
+  const executableNames = executables
+    .filter(Boolean)
+    .map((name) => path.basename(name).toLowerCase())
 
-  if (targets.length === 0) {
+  if (targets.length === 0 && executableNames.length === 0) {
     return false
   }
 
@@ -365,8 +490,13 @@ async function isAnyWindowsProcessRunning(executables) {
     '$targets = @(',
     targets.map((target) => `'${target.replaceAll("'", "''")}'`).join(', '),
     ')',
+    '$names = @(',
+    executableNames.map((name) => `'${name.replaceAll("'", "''")}'`).join(', '),
+    ')',
     '$found = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue | Where-Object {',
-    '  $_.ExecutablePath -and ($targets -contains $_.ExecutablePath.ToLowerInvariant())',
+    '  $processName = if ($_.Name) { $_.Name.ToLowerInvariant() } else { "" }',
+    '  $processPath = if ($_.ExecutablePath) { $_.ExecutablePath.ToLowerInvariant() } else { "" }',
+    '  ($processPath -and ($targets -contains $processPath)) -or ($processName -and ($names -contains $processName))',
     '} | Select-Object -First 1',
     'if ($found) { "running" }'
   ].join(' ')
@@ -410,6 +540,7 @@ function ensureClientRunningPoll() {
 
     clientRunningLock = false
     await releaseClientLaunchLock()
+    await restoreClientExecutablesIfNeeded()
     stopClientRunningPoll()
   }, 2000)
 }
@@ -424,11 +555,27 @@ function stopClientRunningPoll() {
 }
 
 function getClientLockFilePath() {
-  return join(app.getPath('userData'), 'client-launch.lock')
+  return join(getSessionPath(), 'client-launch.lock')
 }
 
 function getLauncherTokenFilePath(sessionPath) {
   return join(sessionPath, 'otclient', launcherTokenFileName)
+}
+
+function getSessionPath() {
+  return app.isPackaged ? app.getPath('userData') : app.getAppPath()
+}
+
+function getClientBaseDir(sessionPath) {
+  return join(sessionPath, 'otclient')
+}
+
+function getClientRuntimeDir(sessionPath) {
+  return join(getClientBaseDir(sessionPath), launcherRuntimeDirName)
+}
+
+function getRuntimeClientExecutablePath(sessionPath, executableName) {
+  return join(getClientRuntimeDir(sessionPath), path.basename(executableName))
 }
 
 async function acquireClientLaunchLock() {
@@ -496,8 +643,59 @@ async function clearLauncherToken(sessionPath) {
   }
 }
 
+async function ensureLauncherGuardFiles(sessionPath) {
+  const clientBasePath = getClientBaseDir(sessionPath)
+
+  for (const [relativePath, content] of Object.entries(launcherGuardFiles)) {
+    const filePath = join(clientBasePath, ...relativePath.split('/'))
+    await fs.promises.mkdir(path.dirname(filePath), { recursive: true })
+    await fs.promises.writeFile(filePath, content)
+  }
+}
+
+async function stashClientExecutables(sessionPath = getSessionPath()) {
+  const clientBaseDir = getClientBaseDir(sessionPath)
+  const runtimeDir = getClientRuntimeDir(sessionPath)
+  await fs.promises.mkdir(runtimeDir, { recursive: true })
+
+  for (const executableName of getConfiguredClientExecutableNames()) {
+    const sourcePath = join(clientBaseDir, executableName)
+    const targetPath = join(runtimeDir, executableName)
+
+    if (await fileExists(sourcePath)) {
+      await fs.promises.rename(sourcePath, targetPath)
+    }
+  }
+}
+
+async function restoreClientExecutablesIfNeeded(sessionPath = getSessionPath()) {
+  const clientBaseDir = getClientBaseDir(sessionPath)
+  const runtimeDir = getClientRuntimeDir(sessionPath)
+  const runtimeDirExists = await directoryExists(runtimeDir)
+  if (!runtimeDirExists) {
+    return
+  }
+
+  if (await detectConfiguredClientProcess()) {
+    return
+  }
+
+  for (const executableName of getConfiguredClientExecutableNames()) {
+    const sourcePath = join(runtimeDir, executableName)
+    const targetPath = join(clientBaseDir, executableName)
+
+    if (await fileExists(sourcePath)) {
+      if (await fileExists(targetPath)) {
+        await fs.promises.unlink(sourcePath)
+      } else {
+        await fs.promises.rename(sourcePath, targetPath)
+      }
+    }
+  }
+}
+
 async function detectConfiguredClientProcess() {
-  const executables = getConfiguredClientExecutableNames()
+  const executables = getConfiguredClientExecutableNames().map((name) => path.basename(name).toLowerCase())
 
   if (executables.length === 0) {
     return false
@@ -524,15 +722,17 @@ async function detectConfiguredClientProcess() {
 function getConfiguredClientExecutableNames() {
   return [...new Set(Object.values(config.CLIENTS || {}))]
     .filter(Boolean)
-    .map((name) => path.basename(name).toLowerCase())
+    .map((name) => path.basename(name))
 }
 
 function getConfiguredClientWindowsTargets() {
-  const sessionPath = app.isPackaged ? app.getPath('userData') : app.getAppPath()
+  const sessionPath = getSessionPath()
+  const clientBaseDir = getClientBaseDir(sessionPath)
+  const runtimeDir = getClientRuntimeDir(sessionPath)
 
   return [...new Set(Object.values(config.CLIENTS || {}))]
     .filter(Boolean)
-    .map((name) => join(sessionPath, 'otclient', name))
+    .flatMap((name) => [join(clientBaseDir, name), join(runtimeDir, name)])
     .map((fullPath) => path.normalize(fullPath).toLowerCase())
 }
 
