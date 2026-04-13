@@ -1,5 +1,5 @@
-appId: com.electron.app
-productName: eldera-launcher
+appId: pro.eldera.app
+productName: Eldera
 directories:
   buildResources: build
 files:
@@ -12,7 +12,8 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: eldera-launcher
+  executableName: Eldera
+  icon: icon.ico
   sign: false
   signAndEditExecutable: false
 nsis:

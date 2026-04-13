@@ -17,7 +17,11 @@
   let totalBytesToDownload = 0
   let totalFilesToWrite = 0
   let speedInterval = null
+  let gameStateInterval = null
   let downloadFinished = false
+  let isGameRunning = false
+  let isLaunchingGame = false
+  let playStatusMessage = ''
 
   const pool = new DownloadPool({
     concurrency: Math.min(6, navigator.hardwareConcurrency),
@@ -56,7 +60,51 @@
   async function autoPlayIfNeeded() {
     const autoPlay = await window.api.getSetting('autoPlay')
     if (autoPlay) {
-      window.api.startGame()
+      await startGame()
+    }
+  }
+
+  async function refreshGameState() {
+    try {
+      const gameState = await window.api.getGameState()
+      isGameRunning = gameState.running
+    } catch (error) {
+      console.error('Error checking client state:', error)
+    }
+  }
+
+  async function startGame() {
+    if (isLaunchingGame) return
+
+    isLaunchingGame = true
+    playStatusMessage = ''
+
+    try {
+      const result = await window.api.startGame()
+
+      if (result?.ok) {
+        isGameRunning = true
+        return
+      }
+
+      if (result?.reason === 'already-running' || result?.reason === 'launching') {
+        isGameRunning = true
+        playStatusMessage = 'Ja existe um cliente aberto neste computador.'
+        return
+      }
+
+      if (result?.reason === 'missing-executable') {
+        playStatusMessage = 'Executavel do cliente nao encontrado.'
+        return
+      }
+
+      playStatusMessage = 'Nao foi possivel iniciar o cliente.'
+    } catch (error) {
+      console.error('Error starting client:', error)
+      playStatusMessage = 'Nao foi possivel iniciar o cliente.'
+    } finally {
+      isLaunchingGame = false
+      await refreshGameState()
     }
   }
 
@@ -148,6 +196,9 @@
 
   onMount(async () => {
     try {
+      await refreshGameState()
+      gameStateInterval = setInterval(refreshGameState, 2000)
+
       R2_CDN_URL = await window.api.getConfig('R2_CDN_URL')
 
       const manifestRes = await fetch(`${R2_CDN_URL}/manifest.json`, { cache: 'no-store' })
@@ -164,7 +215,14 @@
     }
   })
 
-  onDestroy(stopSpeedTracker)
+  onDestroy(() => {
+    stopSpeedTracker()
+
+    if (gameStateInterval) {
+      clearInterval(gameStateInterval)
+      gameStateInterval = null
+    }
+  })
 
   function getBytesProgress() {
     const downloaded = $totalDownloadedBytes
@@ -199,10 +257,13 @@
     <ClientSelector />
     <Button
       style="height:100%;font-size: 32px;"
-      label="Play"
-      disabled={!downloadFinished}
-      onClick={() => window.api.startGame()}
+      label={isGameRunning ? 'Running' : isLaunchingGame ? 'Starting' : 'Play'}
+      disabled={!downloadFinished || isGameRunning || isLaunchingGame}
+      onClick={startGame}
     />
+    {#if playStatusMessage}
+      <div class="play-status">{playStatusMessage}</div>
+    {/if}
   </div>
 </div>
 
@@ -270,12 +331,20 @@
   progress::-webkit-progress-bar {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   }
 
   .play {
     display: flex;
     flex-direction: column;
     gap: 5px;
+  }
+
+  .play-status {
+    max-width: 180px;
+    color: hsl(var(--muted-foreground));
+    font-size: 11px;
+    line-height: 1.4;
+    text-align: center;
   }
 </style>

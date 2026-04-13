@@ -10,6 +10,7 @@ const api = {
   openExternal: (url) => shell.openExternal(url),
   writeFile: (path, data) => electronAPI.ipcRenderer.invoke('write-file', path, data),
   startGame: () => electronAPI.ipcRenderer.invoke('start-game'),
+  getGameState: () => electronAPI.ipcRenderer.invoke('get-game-state'),
   cleanClient: (manifest) => electronAPI.ipcRenderer.invoke('clean-client', manifest),
   readClientFiles: () => electronAPI.ipcRenderer.invoke('read-client-files'),
   getSetting: (key) => electronAPI.ipcRenderer.invoke('get-setting', key),

@@ -6,6 +6,7 @@
   "R2_CDN_URL": "https://pub-7d39372dbb3e4061b024ffe5d80fed84.r2.dev",
   "API_URL": "https://launcher.eldera.pro",
   "CLIENTS": {
-    "64-bit DirectX": "eldera_dx_x64.exe"
+    "64-bit DirectX": "eldera_dx_x64.exe",
+    "64-bit OpenGL": "eldera_gl_x64.exe"
   }
 }
